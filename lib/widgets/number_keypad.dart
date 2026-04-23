@@ -67,6 +67,7 @@ class NumberKeypad extends StatelessWidget {
             child: _KeyButton(
               icon: Icons.check,
               background: Colors.green,
+              foreground: Colors.white,
               onPressed: canSubmit ? onSubmit : null,
             ),
           ),
@@ -81,8 +82,15 @@ class _KeyButton extends StatelessWidget {
   final IconData? icon;
   final VoidCallback? onPressed;
   final Color? background;
+  final Color? foreground;
 
-  const _KeyButton({this.label, this.icon, this.onPressed, this.background});
+  const _KeyButton({
+    this.label,
+    this.icon,
+    this.onPressed,
+    this.background,
+    this.foreground,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -92,6 +100,7 @@ class _KeyButton extends StatelessWidget {
         onPressed: onPressed,
         style: FilledButton.styleFrom(
           backgroundColor: background,
+          foregroundColor: foreground,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),

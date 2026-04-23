@@ -120,6 +120,10 @@ If the timer reaches 0 before the user finishes all 10 questions, we show a "Tim
 
 Right now, a correct answer advances immediately; a wrong answer shows the hint (training) or a red flash (time test). A green pulse on correct answers would be a nice polish item but isn't required for the core experience.
 
+### Theme
+
+Pink scaffold background, blue buttons with light-pink labels. Chosen for a playful, kid-friendly look. Defined once in `main.dart` via `scaffoldBackgroundColor`, `ColorScheme.fromSeed`, and `FilledButtonThemeData` / `ElevatedButtonThemeData` — every button in the app picks up the colors automatically. The only per-widget override is the green "submit" key on the number keypad (explicit white icon for contrast).
+
 ## Build a release APK
 
 ```bash

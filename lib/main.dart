@@ -13,9 +13,23 @@ class MathKidApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Multiplication Trainer',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
+        scaffoldBackgroundColor: Colors.pink.shade100,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.pink),
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            backgroundColor: Colors.blue.shade600,
+            foregroundColor: Colors.pink.shade100,
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue.shade600,
+            foregroundColor: Colors.pink.shade100,
+          ),
+        ),
       ),
       home: const HomeScreen(),
     );
