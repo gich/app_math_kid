@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../logic/quiz_generator.dart';
@@ -10,10 +12,14 @@ class QuizScreen extends StatefulWidget {
   final GameMode mode;
   final List<int> digits;
 
+  /// Only used for [GameMode.timeTest]. Ignored for training.
+  final Duration? testDuration;
+
   const QuizScreen({
     super.key,
     required this.mode,
     required this.digits,
+    this.testDuration,
   });
 
   @override
@@ -21,28 +27,55 @@ class QuizScreen extends StatefulWidget {
 }
 
 class _QuizScreenState extends State<QuizScreen> {
-  static const _totalQuestions = 10;
+  static const _questionCount = 10;
 
   late final List<Question> _questions;
-  late final DateTime _startTime;
+  late final Duration _startRemaining;
+
+  Timer? _ticker;
+  Timer? _advanceTimer;
 
   int _index = 0;
   int _correct = 0;
+  Duration _remaining = Duration.zero;
   String _input = '';
   bool _showHint = false;
+
+  bool get _isTimeTest => widget.mode == GameMode.timeTest;
 
   @override
   void initState() {
     super.initState();
-    _questions = QuizGenerator.generate(
-      digits: widget.digits,
-      count: _totalQuestions,
-    );
-    _startTime = DateTime.now();
+    _questions =
+        QuizGenerator.generate(digits: widget.digits, count: _questionCount);
+
+    if (_isTimeTest) {
+      _startRemaining = widget.testDuration ?? const Duration(seconds: 30);
+      _remaining = _startRemaining;
+      _ticker = Timer.periodic(const Duration(seconds: 1), _onTick);
+    } else {
+      _startRemaining = Duration.zero;
+    }
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    _advanceTimer?.cancel();
+    super.dispose();
   }
 
   Question get _current => _questions[_index];
-  bool get _isTimeTest => widget.mode == GameMode.timeTest;
+
+  void _onTick(Timer _) {
+    if (!mounted) return;
+    setState(() {
+      _remaining -= const Duration(seconds: 1);
+    });
+    if (_remaining.inSeconds <= 0) {
+      _finish(timedOut: true);
+    }
+  }
 
   void _onDigit(int d) {
     if (_showHint) return;
@@ -63,33 +96,27 @@ class _QuizScreenState extends State<QuizScreen> {
   void _onSubmit() {
     if (_showHint || _input.isEmpty) return;
     final typed = int.parse(_input);
+
     if (typed == _current.answer) {
-      _goNext(wasCorrect: true);
+      _correct++;
+      _advance();
+    } else if (_isTimeTest) {
+      // Time test: red flash, then auto-advance — no Continue button.
+      setState(() => _showHint = true);
+      _advanceTimer = Timer(const Duration(milliseconds: 900), _advance);
     } else {
+      // Training: show hint block, wait for Continue.
       setState(() => _showHint = true);
     }
   }
 
-  void _goNext({required bool wasCorrect}) {
-    if (wasCorrect) _correct++;
+  void _advance() {
+    if (!mounted) return;
 
     if (_index + 1 >= _questions.length) {
-      final elapsed = DateTime.now().difference(_startTime);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ResultScreen(
-            mode: widget.mode,
-            correct: _correct,
-            total: _totalQuestions,
-            digits: widget.digits,
-            elapsed: _isTimeTest ? elapsed : null,
-          ),
-        ),
-      );
+      _finish(timedOut: false);
       return;
     }
-
     setState(() {
       _showHint = false;
       _input = '';
@@ -97,21 +124,60 @@ class _QuizScreenState extends State<QuizScreen> {
     });
   }
 
+  void _finish({required bool timedOut}) {
+    _ticker?.cancel();
+    _advanceTimer?.cancel();
+    if (!mounted) return;
+
+    Duration? elapsed;
+    if (_isTimeTest && !timedOut) {
+      elapsed = _startRemaining - _remaining;
+    }
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ResultScreen(
+          mode: widget.mode,
+          correct: _correct,
+          total: _questionCount,
+          digits: widget.digits,
+          elapsed: elapsed,
+          timedOut: timedOut,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final q = _current;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Question ${_index + 1} of $_totalQuestions'),
+        title: Text(_isTimeTest
+            ? _formatTime(_remaining)
+            : 'Question ${_index + 1} of ${_questions.length}'),
+        actions: _isTimeTest
+            ? [
+                Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: Center(
+                    child: Text(
+                      'Q${_index + 1}/${_questions.length}',
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ]
+            : null,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            LinearProgressIndicator(
-              value: (_index + 1) / _totalQuestions,
-            ),
+            LinearProgressIndicator(value: (_index + 1) / _questions.length),
             const SizedBox(height: 24),
             Text(
               '${q.a} × ${q.b} = ?',
@@ -122,16 +188,12 @@ class _QuizScreenState extends State<QuizScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            _AnswerBox(
-              text: _input,
-              isError: _showHint,
-            ),
+            _AnswerBox(text: _input, isError: _showHint),
             const SizedBox(height: 16),
-            if (_showHint)
-              _HintBlock(
-                q: q,
-                onContinue: () => _goNext(wasCorrect: false),
-              ),
+            if (_showHint && !_isTimeTest)
+              _HintBlock(q: q, onContinue: _advance),
+            if (_showHint && _isTimeTest)
+              _WrongFlash(correctAnswer: q.answer),
             const Spacer(),
             NumberKeypad(
               onDigitPressed: _onDigit,
@@ -143,6 +205,16 @@ class _QuizScreenState extends State<QuizScreen> {
         ),
       ),
     );
+  }
+
+  String _formatTime(Duration d) {
+    final s = d.inSeconds.clamp(0, 9999);
+    if (s >= 60) {
+      final minutes = s ~/ 60;
+      final seconds = s % 60;
+      return '$minutes:${seconds.toString().padLeft(2, '0')}';
+    }
+    return '0:${s.toString().padLeft(2, '0')}';
   }
 }
 
@@ -170,6 +242,29 @@ class _AnswerBox extends StatelessWidget {
           fontSize: 36,
           color: isError ? Colors.red : null,
         ),
+      ),
+    );
+  }
+}
+
+class _WrongFlash extends StatelessWidget {
+  final int correctAnswer;
+
+  const _WrongFlash({required this.correctAnswer});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.red.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.red),
+      ),
+      child: Text(
+        'Wrong! Answer: $correctAnswer',
+        textAlign: TextAlign.center,
+        style: const TextStyle(fontSize: 20, color: Colors.red),
       ),
     );
   }

@@ -4,11 +4,11 @@ A simple Flutter app that helps kids practice the multiplication table. Two mode
 
 ## Features
 
-- **Training mode** — pick one table (×2 … ×9), answer 10 questions at your own pace. A wrong answer shows a visual hint (e.g. `7 × 3 = 7 + 7 + 7 = 21`).
-- **Time Test mode** — pick one or more tables, answer 10 questions; total time is measured.
+- **Training mode** — pick one table (×2 … ×9), answer 10 questions at your own pace. A wrong answer shows a visual hint (e.g. `7 × 3 = 7 + 7 + 7 = 21`) and waits for "Continue".
+- **Time Test mode** — pick one or more tables and a countdown duration (1 min / 45 s / 30 s / 20 s / 15 s), then race to finish 10 questions before the timer runs out. Wrong answers flash briefly and auto-advance to keep the pace up. Finishing in time saves the result; if the timer expires the attempt is discarded and not saved.
 - **Custom on-screen keypad** — kid-friendly, no system keyboard or answer guessing.
 - **Star rating** — 0–3 stars per session based on accuracy, with a confetti burst for a perfect score.
-- **Local history** — the last 5 results are persisted on the device; a reset button clears them.
+- **Local history** — the last 5 successful results are persisted on the device; a reset button clears them.
 - **No accounts, no network** — everything is stored locally.
 
 ## Requirements
@@ -100,15 +100,25 @@ We store only 5 results max. A relational database would be overkill. JSON-encod
 
 ### One `QuizScreen` for both modes
 
-`GameMode` is just a parameter. Training and Time Test differ only in:
+`GameMode` is just a parameter. Training and Time Test share the same quiz screen, keypad, and 10-question count, differing only in:
 - whether multiple digits can be picked (decided one screen earlier)
-- whether elapsed time is shown at the end
+- whether a countdown timer runs
+- how a wrong answer is handled (training waits for "Continue"; time test flashes and auto-advances)
+- how the quiz can end (training ends after question 10; time test ends on question 10 OR on timeout)
 
 Duplicating the screen would have meant two places to fix any bug.
 
+### Time Test: 10 questions within a countdown, not "as many as you can"
+
+We considered the alternative "answer as many as you can in X seconds", but settled on "answer all 10 before the timer runs out". It keeps the scoring (10 questions, N correct) identical to training — the same `QuizResult` shape, the same star logic, the same history entry. The only extra variable is the countdown.
+
+### Timed-out attempts are not saved
+
+If the timer reaches 0 before the user finishes all 10 questions, we show a "Time's up!" screen and discard the attempt — it does not land in history. This way history represents genuine completed sessions and star averages stay meaningful. The user can retry with the same duration or pick a longer one.
+
 ### No per-question feedback animation (yet)
 
-Right now, a correct answer advances immediately; a wrong answer shows the hint. Adding a green/red flash would be a nice polish item but isn't required for the core experience.
+Right now, a correct answer advances immediately; a wrong answer shows the hint (training) or a red flash (time test). A green pulse on correct answers would be a nice polish item but isn't required for the core experience.
 
 ## Build a release APK
 

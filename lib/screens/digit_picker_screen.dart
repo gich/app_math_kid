@@ -15,7 +15,16 @@ class DigitPickerScreen extends StatefulWidget {
 class _DigitPickerScreenState extends State<DigitPickerScreen> {
   static const _availableDigits = [2, 3, 4, 5, 6, 7, 8, 9];
 
+  static const _durations = [
+    Duration(minutes: 1),
+    Duration(seconds: 45),
+    Duration(seconds: 30),
+    Duration(seconds: 20),
+    Duration(seconds: 15),
+  ];
+
   final Set<int> _selected = {};
+  Duration _duration = const Duration(seconds: 30);
 
   bool get _isMultiSelect => widget.mode == GameMode.timeTest;
 
@@ -40,6 +49,7 @@ class _DigitPickerScreenState extends State<DigitPickerScreen> {
         builder: (_) => QuizScreen(
           mode: widget.mode,
           digits: _selected.toList(),
+          testDuration: _isMultiSelect ? _duration : null,
         ),
       ),
     );
@@ -60,7 +70,7 @@ class _DigitPickerScreenState extends State<DigitPickerScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(hint, style: const TextStyle(fontSize: 16)),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             Wrap(
               spacing: 12,
               runSpacing: 12,
@@ -77,6 +87,30 @@ class _DigitPickerScreenState extends State<DigitPickerScreen> {
                 );
               }).toList(),
             ),
+            if (_isMultiSelect) ...[
+              const SizedBox(height: 32),
+              const Text(
+                'Test duration',
+                style: TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: _durations.map((d) {
+                  return ChoiceChip(
+                    label: Text(_formatDuration(d),
+                        style: const TextStyle(fontSize: 18)),
+                    selected: _duration == d,
+                    onSelected: (_) => setState(() => _duration = d),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
             const Spacer(),
             FilledButton(
               onPressed: _selected.isEmpty ? null : _onStart,
@@ -89,5 +123,12 @@ class _DigitPickerScreenState extends State<DigitPickerScreen> {
         ),
       ),
     );
+  }
+
+  String _formatDuration(Duration d) {
+    if (d.inMinutes >= 1 && d.inSeconds % 60 == 0) {
+      return '${d.inMinutes} min';
+    }
+    return '${d.inSeconds} s';
   }
 }

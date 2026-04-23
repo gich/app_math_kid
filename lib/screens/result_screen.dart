@@ -15,6 +15,11 @@ class ResultScreen extends StatefulWidget {
   final List<int> digits;
   final Duration? elapsed;
 
+  /// True when a time test ran out before all questions were answered.
+  /// Timed-out attempts are NOT saved to history and show a "time's up" view
+  /// instead of the regular result.
+  final bool timedOut;
+
   const ResultScreen({
     super.key,
     required this.mode,
@@ -22,6 +27,7 @@ class ResultScreen extends StatefulWidget {
     required this.total,
     required this.digits,
     this.elapsed,
+    this.timedOut = false,
   });
 
   @override
@@ -44,9 +50,11 @@ class _ResultScreenState extends State<ResultScreen> {
       completedAt: DateTime.now(),
       elapsed: widget.elapsed,
     );
-    _save();
-    if (_result.stars == 3) {
-      _confetti.play();
+    if (!widget.timedOut) {
+      _save();
+      if (_result.stars == 3) {
+        _confetti.play();
+      }
     }
   }
 
@@ -62,6 +70,58 @@ class _ResultScreenState extends State<ResultScreen> {
 
   @override
   Widget build(BuildContext context) {
+    return widget.timedOut ? _buildTimedOut(context) : _buildResult(context);
+  }
+
+  Widget _buildTimedOut(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Time\'s up'),
+        automaticallyImplyLeading: false,
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.timer_off,
+                  size: 96, color: Colors.redAccent),
+              const SizedBox(height: 16),
+              const Text(
+                "Time's up!",
+                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'You answered ${widget.correct} of ${widget.total} before the timer ran out.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 18),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'This attempt is not saved to history — try again!',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+              const SizedBox(height: 48),
+              FilledButton(
+                onPressed: () =>
+                    Navigator.popUntil(context, (r) => r.isFirst),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(56),
+                ),
+                child: const Text('Back to menu',
+                    style: TextStyle(fontSize: 20)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildResult(BuildContext context) {
     final percent = (widget.correct / widget.total * 100).round();
 
     return Scaffold(
