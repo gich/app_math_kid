@@ -44,6 +44,12 @@ While `flutter run` is active:
 
 After adding a new package to `pubspec.yaml`, do a full `q` + `flutter run` — hot restart does not register new native plugins.
 
+Run the unit tests with:
+
+```bash
+flutter test
+```
+
 ## Project structure
 
 ```
