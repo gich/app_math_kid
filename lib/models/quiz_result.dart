@@ -8,6 +8,7 @@ class QuizResult {
   final List<int> digits;
   final DateTime completedAt;
   final Duration? elapsed;
+  final String playerName;
 
   const QuizResult({
     required this.mode,
@@ -16,6 +17,7 @@ class QuizResult {
     required this.digits,
     required this.completedAt,
     this.elapsed,
+    this.playerName = 'unknown',
   });
 
   /// 0..3 stars based on accuracy.
@@ -36,6 +38,7 @@ class QuizResult {
         'digits': digits,
         'completedAt': completedAt.toIso8601String(),
         'elapsedMs': elapsed?.inMilliseconds,
+        'playerName': playerName,
       };
 
   factory QuizResult.fromJson(Map<String, dynamic> json) {
@@ -48,6 +51,8 @@ class QuizResult {
       elapsed: json['elapsedMs'] == null
           ? null
           : Duration(milliseconds: json['elapsedMs'] as int),
+      // Older saves don't have playerName — fall back to the default.
+      playerName: (json['playerName'] as String?) ?? 'unknown',
     );
   }
 }

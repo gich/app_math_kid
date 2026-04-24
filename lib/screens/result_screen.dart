@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 
+import '../logic/player_storage.dart';
 import '../logic/results_storage.dart';
 import '../models/game_mode.dart';
 import '../models/quiz_result.dart';
@@ -62,7 +63,17 @@ class _ResultScreenState extends State<ResultScreen> {
   }
 
   Future<void> _save() async {
-    await ResultsStorage().add(_result);
+    final playerName = await PlayerStorage().getCurrent();
+    final toSave = QuizResult(
+      mode: _result.mode,
+      correct: _result.correct,
+      total: _result.total,
+      digits: _result.digits,
+      completedAt: _result.completedAt,
+      elapsed: _result.elapsed,
+      playerName: playerName,
+    );
+    await ResultsStorage().add(toSave);
   }
 
   @override

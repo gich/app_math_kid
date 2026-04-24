@@ -101,7 +101,7 @@ class _ResultTile extends StatelessWidget {
     return Card(
       child: ListTile(
         leading: StarRating(filled: result.stars, size: 20),
-        title: Text(digitsLabel),
+        title: Text('${result.playerName} · $digitsLabel'),
         subtitle: Text(_subtitle()),
         trailing: Text(
           '${result.correct}/${result.total}',

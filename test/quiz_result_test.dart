@@ -48,6 +48,7 @@ void main() {
         digits: const [3, 7],
         completedAt: DateTime(2026, 4, 23, 15, 30),
         elapsed: const Duration(seconds: 25),
+        playerName: 'Alex',
       );
 
       final json = original.toJson();
@@ -59,6 +60,23 @@ void main() {
       expect(restored.digits, original.digits);
       expect(restored.completedAt, original.completedAt);
       expect(restored.elapsed, original.elapsed);
+      expect(restored.playerName, 'Alex');
+    });
+
+    test('fromJson defaults playerName when missing (backward compat)', () {
+      // An older QuizResult JSON from before the playerName field existed.
+      final legacyJson = {
+        'mode': 'timeTest',
+        'correct': 7,
+        'total': 10,
+        'digits': [5],
+        'completedAt': '2026-01-15T12:00:00.000',
+        'elapsedMs': 45000,
+      };
+
+      final restored = QuizResult.fromJson(legacyJson);
+      expect(restored.playerName, 'unknown');
+      expect(restored.correct, 7); // sanity-check
     });
   });
 }

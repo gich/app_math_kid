@@ -6,6 +6,7 @@ A simple Flutter app that helps kids practice the multiplication table. Two mode
 
 - **Training mode** — pick one table (×2 … ×9), answer 10 questions at your own pace. A wrong answer shows a visual hint (e.g. `7 × 3 = 7 + 7 + 7 = 21`) and waits for "Continue".
 - **Time Test mode** — pick one or more tables and a countdown duration (1 min / 45 s / 30 s / 20 s / 15 s), then race to finish 10 questions before the timer runs out. Wrong answers flash briefly and auto-advance to keep the pace up. Finishing in time saves the result; if the timer expires the attempt is discarded and not saved.
+- **Player name (optional)** — tap the chip on the home screen to type a name or pick one from previously used names on this device. Empty / not set falls back to `unknown`. The name is saved next to every Time Test result so multiple kids can share a phone and still see who set which record.
 - **Custom on-screen keypad** — kid-friendly, no system keyboard or answer guessing.
 - **Star rating** — 0–3 stars per session based on accuracy, with a confetti burst for a perfect score.
 - **Local history** — the last 5 successful **Time Test** results are persisted on the device; a reset button clears them. Training sessions are not saved (practice, not a scoreboard).
@@ -125,6 +126,10 @@ If the timer reaches 0 before the user finishes all 10 questions, we show a "Tim
 ### Only Time Test results are saved to history
 
 Training is practice at the user's own pace — no timer, no stakes. Saving training attempts would just push out more meaningful Time Test records from the 5-slot history. So training sessions are never persisted; they still get stars and confetti on the result screen for motivation, just nothing more. The history screen also filters its display in case legacy training entries are still on disk from older builds.
+
+### Player names are optional and device-local
+
+Multiple kids can share the same phone, so we keep a "current player" name and a list of previously used names in `shared_preferences`. Setting the name is never required — an empty name falls back to `unknown`. The name is frozen into each `QuizResult` at save time, so renaming later does not rewrite history. `QuizResult.fromJson` defaults missing `playerName` to `unknown` for backward compatibility with records saved before this feature existed.
 
 ### No per-question feedback animation (yet)
 
