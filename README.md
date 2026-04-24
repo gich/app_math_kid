@@ -9,7 +9,7 @@ A simple Flutter app that helps kids practice the multiplication table. Two mode
 - **Player name (optional)** — tap the chip on the home screen to type a name or pick one from previously used names on this device. Empty / not set falls back to `unknown`. The name is saved next to every Time Test result so multiple kids can share a phone and still see who set which record.
 - **Custom on-screen keypad** — kid-friendly, no system keyboard or answer guessing.
 - **Star rating** — 0–3 stars per session based on accuracy, with a confetti burst for a perfect score.
-- **Local history** — the last 5 successful **Time Test** results are persisted on the device and shown sorted by fastest time first (mini-leaderboard). A reset button clears them. Training sessions are not saved (practice, not a scoreboard).
+- **Local history** — the last 10 successful **Time Test** results are persisted on the device and shown sorted by fastest time first (mini-leaderboard). A reset button clears them. Training sessions are not saved (practice, not a scoreboard).
 - **No accounts, no network** — everything is stored locally.
 
 ## Requirements
@@ -125,7 +125,7 @@ If the timer reaches 0 before the user finishes all 10 questions, we show a "Tim
 
 ### Only Time Test results are saved to history
 
-Training is practice at the user's own pace — no timer, no stakes. Saving training attempts would just push out more meaningful Time Test records from the 5-slot history. So training sessions are never persisted; they still get stars and confetti on the result screen for motivation, just nothing more. The history screen also filters its display in case legacy training entries are still on disk from older builds.
+Training is practice at the user's own pace — no timer, no stakes. Saving training attempts would just push out more meaningful Time Test records from the 10-slot history. So training sessions are never persisted; they still get stars and confetti on the result screen for motivation, just nothing more. The history screen also filters its display in case legacy training entries are still on disk from older builds.
 
 ### Player names are optional and device-local
 

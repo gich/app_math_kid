@@ -6,7 +6,7 @@ import '../models/quiz_result.dart';
 
 class ResultsStorage {
   static const _key = 'quiz_results';
-  static const maxKept = 5;
+  static const maxKept = 10;
 
   Future<List<QuizResult>> loadAll() async {
     final prefs = await SharedPreferences.getInstance();
