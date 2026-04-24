@@ -9,7 +9,7 @@ A simple Flutter app that helps kids practice the multiplication table. Two mode
 - **Player name (optional)** — tap the chip on the home screen to type a name or pick one from previously used names on this device. Empty / not set falls back to `unknown`. The name is saved next to every Time Test result so multiple kids can share a phone and still see who set which record.
 - **Custom on-screen keypad** — kid-friendly, no system keyboard or answer guessing.
 - **Star rating** — 0–3 stars per session based on accuracy, with a confetti burst for a perfect score.
-- **Local history** — the last 5 successful **Time Test** results are persisted on the device; a reset button clears them. Training sessions are not saved (practice, not a scoreboard).
+- **Local history** — the last 5 successful **Time Test** results are persisted on the device and shown sorted by fastest time first (mini-leaderboard). A reset button clears them. Training sessions are not saved (practice, not a scoreboard).
 - **No accounts, no network** — everything is stored locally.
 
 ## Requirements

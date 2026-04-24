@@ -27,6 +27,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
     if (!mounted) return;
     final timeTestOnly =
         items.where((r) => r.mode == GameMode.timeTest).toList();
+    // Fastest first. Any entry without an elapsed time (legacy data) goes last.
+    timeTestOnly.sort((a, b) {
+      final ae = a.elapsed;
+      final be = b.elapsed;
+      if (ae == null && be == null) return 0;
+      if (ae == null) return 1;
+      if (be == null) return -1;
+      return ae.compareTo(be);
+    });
     setState(() => _results = timeTestOnly);
   }
 
