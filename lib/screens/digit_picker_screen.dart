@@ -28,6 +28,8 @@ class _DigitPickerScreenState extends State<DigitPickerScreen> {
 
   bool get _isMultiSelect => widget.mode == GameMode.timeTest;
 
+  bool get _areAllSelected => _selected.length == _availableDigits.length;
+
   void _toggle(int digit) {
     setState(() {
       if (_isMultiSelect) {
@@ -38,6 +40,16 @@ class _DigitPickerScreenState extends State<DigitPickerScreen> {
         _selected
           ..clear()
           ..add(digit);
+      }
+    });
+  }
+
+  void _toggleAll() {
+    setState(() {
+      if (_areAllSelected) {
+        _selected.clear();
+      } else {
+        _selected.addAll(_availableDigits);
       }
     });
   }
@@ -69,7 +81,18 @@ class _DigitPickerScreenState extends State<DigitPickerScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(hint, style: const TextStyle(fontSize: 16)),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(hint, style: const TextStyle(fontSize: 16)),
+                ),
+                if (_isMultiSelect)
+                  TextButton(
+                    onPressed: _toggleAll,
+                    child: Text(_areAllSelected ? 'Clear' : 'Select all'),
+                  ),
+              ],
+            ),
             const SizedBox(height: 16),
             Wrap(
               spacing: 12,
