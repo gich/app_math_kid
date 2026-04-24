@@ -51,7 +51,10 @@ class _ResultScreenState extends State<ResultScreen> {
       elapsed: widget.elapsed,
     );
     if (!widget.timedOut) {
-      _save();
+      // Only time test results go to history — training is practice, not a record.
+      if (widget.mode == GameMode.timeTest) {
+        _save();
+      }
       if (_result.stars == 3) {
         _confetti.play();
       }

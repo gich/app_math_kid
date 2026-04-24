@@ -25,7 +25,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Future<void> _load() async {
     final items = await _storage.loadAll();
     if (!mounted) return;
-    setState(() => _results = items);
+    final timeTestOnly =
+        items.where((r) => r.mode == GameMode.timeTest).toList();
+    setState(() => _results = timeTestOnly);
   }
 
   Future<void> _confirmReset() async {
@@ -94,14 +96,12 @@ class _ResultTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final modeName =
-        result.mode == GameMode.training ? 'Training' : 'Time Test';
     final digitsLabel = result.digits.map((d) => '×$d').join(', ');
 
     return Card(
       child: ListTile(
         leading: StarRating(filled: result.stars, size: 20),
-        title: Text('$modeName ($digitsLabel)'),
+        title: Text(digitsLabel),
         subtitle: Text(_subtitle()),
         trailing: Text(
           '${result.correct}/${result.total}',

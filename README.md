@@ -8,7 +8,7 @@ A simple Flutter app that helps kids practice the multiplication table. Two mode
 - **Time Test mode** — pick one or more tables and a countdown duration (1 min / 45 s / 30 s / 20 s / 15 s), then race to finish 10 questions before the timer runs out. Wrong answers flash briefly and auto-advance to keep the pace up. Finishing in time saves the result; if the timer expires the attempt is discarded and not saved.
 - **Custom on-screen keypad** — kid-friendly, no system keyboard or answer guessing.
 - **Star rating** — 0–3 stars per session based on accuracy, with a confetti burst for a perfect score.
-- **Local history** — the last 5 successful results are persisted on the device; a reset button clears them.
+- **Local history** — the last 5 successful **Time Test** results are persisted on the device; a reset button clears them. Training sessions are not saved (practice, not a scoreboard).
 - **No accounts, no network** — everything is stored locally.
 
 ## Requirements
@@ -121,6 +121,10 @@ We considered the alternative "answer as many as you can in X seconds", but sett
 ### Timed-out attempts are not saved
 
 If the timer reaches 0 before the user finishes all 10 questions, we show a "Time's up!" screen and discard the attempt — it does not land in history. This way history represents genuine completed sessions and star averages stay meaningful. The user can retry with the same duration or pick a longer one.
+
+### Only Time Test results are saved to history
+
+Training is practice at the user's own pace — no timer, no stakes. Saving training attempts would just push out more meaningful Time Test records from the 5-slot history. So training sessions are never persisted; they still get stars and confetti on the result screen for motivation, just nothing more. The history screen also filters its display in case legacy training entries are still on disk from older builds.
 
 ### No per-question feedback animation (yet)
 
